@@ -2,7 +2,10 @@
 
 const fs = require('fs'),
   path = require('path'),
-  net = require('tls');
+  net = require('net'),
+  conf = require('./conf');
+
+conf.setSecure(false);
 
 const s = net.connect(8000, () => console.log('client connected',
               s.authorized ? 'authorized' : 'unauthorized'));

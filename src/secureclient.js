@@ -2,7 +2,10 @@
 
 const fs = require('fs'),
   path = require('path'),
-  tls = require('tls');
+  tls = require('tls'),
+  conf = require('./conf');
+
+conf.setSecure(true);
 
 const s = tls.connect(8000, {
   key: fs.readFileSync(path.join(__dirname, '../keys/client.key')),

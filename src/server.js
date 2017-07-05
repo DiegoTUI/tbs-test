@@ -3,28 +3,40 @@
 const fs = require('fs'),
   path = require('path'),
   net = require('net'),
-  tls = require('tls');
+  tls = require('tls'),
+  conf = require('./conf');
 
-const server = tls.createServer({
-  key: fs.readFileSync(path.join(__dirname, '../keys/server.key')),
-  cert: fs.readFileSync(path.join(__dirname, '../keys/server.crt')),
-  ca: fs.readFileSync(path.join(__dirname, '../keys/ca.crt')),
-  requestCert: true,
-}, ss => {
-  console.log('server connected',
-    ss.authorized ? 'authorized' : 'unauthorized');
+const server = net.createServer({
+}, s => {
+  console.log('client connected',
+    conf.isSecure() ? 'secured' : 'unsecured');
   
-  ss.setEncoding('utf8');
-  ss.write('welcome!\n');
+  if (conf.isSecure()) {
+    s = new tls.TLSSocket(s, {
+      isServer: true,
+      server: server,
+      key: fs.readFileSync(path.join(__dirname, '../keys/server.key')),
+      cert: fs.readFileSync(path.join(__dirname, '../keys/server.crt')),
+      ca: fs.readFileSync(path.join(__dirname, '../keys/ca.crt')),
+      requestCert: true
+    });
 
-  ss.on('data', data => {
-    console.log('From client:', data);
-    ss.write(data);
+    s.on('secure', () => console.log('Socket secure connect!!'));
+  }
+  
+  s.setEncoding('utf8');
+  s.write('welcome!\n');
+
+  s.on('data', data => {
+    console.log('From ' +
+      (conf.isSecure() ? 'secured' : 'unsecured') + ' client:', data);
+    s.write(data);
   });
 
-  ss.on('end', console.log.bind(null, 'socket closed'));
+  s.on('end', () => console.log('socket ended'));
+  s.on('close', () => console.log('socket closed'));
 
-  ss.on('error', console.log.bind(null, 'error'))
+  s.on('error', console.log.bind(null, 'error'))
 });
 
 server.listen(8000, console.log.bind(null, 'server listening on port 8000'));
