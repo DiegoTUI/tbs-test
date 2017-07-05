@@ -2,9 +2,13 @@
 
 const fs = require('fs'),
   path = require('path'),
-  net = require('tls');
+  tls = require('tls');
 
-const s = net.connect(8000, () => console.log('client connected',
+const s = tls.connect(8000, {
+  key: fs.readFileSync(path.join(__dirname, '../keys/client.key')),
+  cert: fs.readFileSync(path.join(__dirname, '../keys/client.crt')),
+  ca: fs.readFileSync(path.join(__dirname, '../keys/ca.crt')),
+}, () => console.log('client connected',
               s.authorized ? 'authorized' : 'unauthorized'));
 
 process.stdin.on('data', data => s.write(data));
