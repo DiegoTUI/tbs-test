@@ -1,8 +1,6 @@
 'use strict';
 
-const fs = require('fs'),
-  path = require('path'),
-  net = require('net'),
+const net = require('net'),
   conf = require('./conf');
 
 conf.setSecure(false);

@@ -10,5 +10,5 @@ exports.setSecure = secure => {
     () => fs.closeSync(fs.openSync(filename, 'w')) :
     fs.unlinkSync.bind(null, filename);
   
-  return action();
+  try { return action() } catch(e) {};
 }
