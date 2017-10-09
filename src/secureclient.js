@@ -7,10 +7,9 @@ const fs = require('fs'),
 
 conf.setSecure(true);
 
-const s = tls.connect(8000, {
-  key: fs.readFileSync(path.join(__dirname, '../keys/client.key')),
-  cert: fs.readFileSync(path.join(__dirname, '../keys/client.crt')),
-  ca: fs.readFileSync(path.join(__dirname, '../keys/ca.crt')),
+const s = tls.connect(14000, {
+  ca: fs.readFileSync(path.join(__dirname, '../keys/uni1/rootCA.crt')),
+  checkServerIdentity: () => undefined
 }, () => console.log('client connected',
               s.authorized ? 'authorized' : 'unauthorized'));
 

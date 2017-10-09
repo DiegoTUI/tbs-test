@@ -5,10 +5,15 @@ const net = require('net'),
 
 conf.setSecure(false);
 
-const s = net.connect(8000, () => console.log('client connected',
-              s.authorized ? 'authorized' : 'unauthorized'));
+const s = net.connect(11000);
 
-process.stdin.on('data', data => s.write(data));
+s.on('connect', () => console.log('client connected',
+              s.authorized ? 'authorized' : 'unauthorized', s.connecting))
+process.stdin.on('data', data => {
+  let str = data.toString().substring(0, data.length - 1);
+  if (str.length === 1) str = '\n';
+  s.write(str);
+});
 
 s.setEncoding('utf8');
 s.on('data', console.log.bind(null, 'From server:'));
