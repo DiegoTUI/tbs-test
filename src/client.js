@@ -1,18 +1,82 @@
 'use strict';
 
-const net = require('net'),
-  conf = require('./conf');
+const fs = require('fs'),
+  path = require('path'),
+  net = require('net');
 
-conf.setSecure(false);
+const stdin = process.stdin;
+stdin.setRawMode(true);
+stdin.resume();
+stdin.setEncoding( 'utf8' );
 
-const s = net.connect(11000);
+const s = net.connect(11000,
+  () => console.log('client connected',
+    s.authorized ? 'authorized' : 'unauthorized'));
 
-s.on('connect', () => console.log('client connected',
-              s.authorized ? 'authorized' : 'unauthorized', s.connecting))
-process.stdin.on('data', data => {
-  let str = data.toString().substring(0, data.length - 1);
-  if (str.length === 1) str = '\n';
-  s.write(str);
+let timer;
+let i = 0;
+
+function play() {
+  timer = setInterval(writeEvent, 1000);
+}
+
+function stop() {
+  clearInterval(timer);
+}
+
+function writeEvent() {
+  const e = 'EVENT-' + i + '\n';
+  console.log(e);
+  s.write(e);
+  i++;
+}
+
+function writeIncompleteEvent() {
+  const e = 'INCOMPLETE_EVENT';
+  console.log(e);
+  s.write(e);
+}
+
+function writeVeryShortEvent() {
+  const e = '<17>\n';
+  console.log(e);
+  s.write(e);
+}
+
+process.stdin.on('data', ch => {
+  switch(ch) {
+    case 'd':
+      console.log('socket end');
+      s.end();
+      break;
+    case 'y':
+      console.log('socket destroy');
+      s.destroy();
+      break;
+    case 'e':
+      writeEvent();
+      break;
+    case 'v':
+      writeVeryShortEvent();
+      break;
+    case 'i':
+      writeIncompleteEvent();
+      break;
+    case 'p':
+      console.log('play');
+      play();
+      break;
+    case 's':
+      console.log('stop');
+      stop();
+      break;
+    case 'q':
+      console.log('exit');
+      process.exit();
+      break;
+    default:
+      console.log('Not a know command\n');
+  }
 });
 
 s.setEncoding('utf8');

@@ -7,13 +7,83 @@ const fs = require('fs'),
 
 conf.setSecure(true);
 
-const s = tls.connect(14000, {
-  ca: fs.readFileSync(path.join(__dirname, '../keys/uni1/rootCA.crt')),
+const stdin = process.stdin;
+stdin.setRawMode(true);
+stdin.resume();
+stdin.setEncoding( 'utf8' );
+
+const s = tls.connect(11000, {
+  key: fs.readFileSync(path.join(__dirname, '../keys/uni1/client1.key')),
+  cert: fs.readFileSync(path.join(__dirname, '../keys/uni1/client1.crt')),
   checkServerIdentity: () => undefined
 }, () => console.log('client connected',
               s.authorized ? 'authorized' : 'unauthorized'));
 
-process.stdin.on('data', data => s.write(data));
+let timer;
+let i = 0;
+
+function play() {
+  timer = setInterval(writeEvent, 1000);
+}
+
+function stop() {
+  clearInterval(timer);
+}
+
+function writeEvent() {
+  const e = 'EVENT-' + i + '\n';
+  console.log(e);
+  s.write(e);
+  i++;
+}
+
+function writeIncompleteEvent() {
+  const e = 'INCOMPLETE_EVENT';
+  console.log(e);
+  s.write(e);
+}
+
+function writeVeryShortEvent() {
+  const e = '<17>\n';
+  console.log(e);
+  s.write(e);
+}
+
+process.stdin.on('data', ch => {
+  switch(ch) {
+    case 'd':
+      console.log('socket end');
+      s.end();
+      break;
+    case 'y':
+      console.log('socket destroy');
+      s.destroy();
+      break;
+    case 'e':
+      writeEvent();
+      break;
+    case 'i':
+      writeIncompleteEvent();
+      break;
+    case 'v':
+      writeVeryShortEvent();
+      break;
+    case 'p':
+      console.log('play');
+      play();
+      break;
+    case 's':
+      console.log('stop');
+      stop();
+      break;
+    case 'q':
+      console.log('exit');
+      process.exit();
+      break;
+    default:
+      console.log('Not a know command\n');
+  }
+});
 
 s.setEncoding('utf8');
 s.on('data', console.log.bind(null, 'From server:'));
