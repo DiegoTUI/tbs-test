@@ -2,7 +2,6 @@
 
 const net = require('net');
 
-let host = process.argv[2] || '127.0.0.1';
 const opts = {
   host: process.argv[2] || '127.0.0.1',
   port: process.argv[3] || 1200
