@@ -12,11 +12,13 @@ stdin.setRawMode(true);
 stdin.resume();
 stdin.setEncoding( 'utf8' );
 
-const s = tls.connect(11000, {
+const port = process.argv[2] || 11000;
+
+const s = tls.connect(port, {
   key: fs.readFileSync(path.join(__dirname, '../keys/uni1/client1.key')),
   cert: fs.readFileSync(path.join(__dirname, '../keys/uni1/client1.crt')),
   checkServerIdentity: () => undefined
-}, () => console.log('client connected',
+}, () => console.log('client connected in port ' + port,
               s.authorized ? 'authorized' : 'unauthorized'));
 
 let timer;
